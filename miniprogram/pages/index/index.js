@@ -7,7 +7,8 @@ Page({
     userInfo: {},
     logged: false,
     takeSession: false,
-    requestResult: ''
+    requestResult: '',
+    upDateImagePath:'../../images/lufei.jpg'
   },
 
   onLoad: function() {
@@ -67,8 +68,32 @@ Page({
     })
   },
 
+  updataMyimg: function(){
+    let that = this;
+   
+    wx.cloud.getTempFileURL({
+      fileList: [app.globalData.cloudPath],
+      success: res => {
+        // fileList 是一个有如下结构的对象数组
+        // [{
+        //    fileID: 'cloud://xxx.png', // 文件 ID
+        //    tempFileURL: '', // 临时文件网络链接
+        //    maxAge: 120 * 60 * 1000, // 有效期
+        // }]
+        console.log(that)
+        that.setData({
+          // fileID: res.fileList[0].fileID,
+          upDateImagePath: res.fileList[0].tempFileURL,
+        })
+        console.log(that + that.data.upDateImagePath + "路径名");
+      },
+      fail: console.error
+    })
+  },
+
   // 上传图片
   doUpload: function () {
+    var that = this;
     // 选择图片
     wx.chooseImage({
       count: 1,
@@ -94,9 +119,9 @@ Page({
             app.globalData.cloudPath = cloudPath
             app.globalData.imagePath = filePath
             
-            wx.navigateTo({
-              url: '../storageConsole/storageConsole'
-            })
+            // wx.navigateTo({
+            //   url: '../storageConsole/storageConsole'
+            // })
           },
           fail: e => {
             console.error('[上传文件] 失败：', e)
@@ -106,8 +131,9 @@ Page({
             })
           },
           complete: () => {
-            wx.hideLoading()
-          }
+            wx.hideLoading();
+            that.updataMyimg();
+           }
         })
 
       },
