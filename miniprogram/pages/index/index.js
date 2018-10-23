@@ -1,6 +1,5 @@
 //index.js
 const app = getApp()
-
 Page({
   data: {
     avatarUrl: './user-unlogin.png',
@@ -8,10 +7,20 @@ Page({
     logged: false,
     takeSession: false,
     requestResult: '',
-    upDateImagePath:'../../images/lufei.jpg'
+    upDateImagePath:'../../images/lufei.jpg',
+    latitude: 23.099994,
+    longitude: 113.324520,
+    markers: [{
+      id: 1,
+      latitude: 23.099994,
+      longitude: 113.324520,
+      name: 'T.I.T 创意园'
+    }]
   },
 
   onLoad: function() {
+    this.mapCtx = wx.createMapContext('myMap')
+    this.moveToLocation();
     if (!wx.cloud) {
       wx.redirectTo({
         url: '../chooseLib/chooseLib',
@@ -20,21 +29,21 @@ Page({
     }
 
     // 获取用户信息
-    wx.getSetting({
-      success: res => {
-        if (res.authSetting['scope.userInfo']) {
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
-          wx.getUserInfo({
-            success: res => {
-              this.setData({
-                avatarUrl: res.userInfo.avatarUrl,
-                userInfo: res.userInfo
-              })
-            }
-          })
-        }
-      }
-    })
+    // wx.getSetting({
+    //   success: res => {
+    //     if (res.authSetting['scope.userInfo']) {
+    //       // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
+    //       wx.getUserInfo({
+    //         success: res => {
+    //           this.setData({
+    //             avatarUrl: res.userInfo.avatarUrl,
+    //             userInfo: res.userInfo
+    //           })
+    //         }
+    //       })
+    //     }
+    //   }
+    // })
   },
 
   onGetUserInfo: function(e) {
@@ -68,21 +77,17 @@ Page({
     })
   },
 
+  //更新上传的图片
   updataMyimg: function(){
     let that = this;
    
     wx.cloud.getTempFileURL({
       fileList: [app.globalData.cloudPath],
       success: res => {
-        // fileList 是一个有如下结构的对象数组
-        // [{
-        //    fileID: 'cloud://xxx.png', // 文件 ID
-        //    tempFileURL: '', // 临时文件网络链接
-        //    maxAge: 120 * 60 * 1000, // 有效期
-        // }]
-        console.log(that)
-        that.setData({
-          // fileID: res.fileList[0].fileID,
+       
+          console.log(that)
+          that.setData({
+          
           upDateImagePath: res.fileList[0].tempFileURL,
         })
         console.log(that + that.data.upDateImagePath + "路径名");
@@ -143,4 +148,52 @@ Page({
     })
   },
 
+  getCenterLocation: function () {
+    let that = this;
+    this.mapCtx.getCenterLocation({
+      success: function (res) {
+        console.log(res.longitude)
+        console.log(res.latitude)
+      }, fail: e => {
+        console.error(e)
+      }, complete: () => {
+        that.translateMarker();
+      }
+    })
+  },
+
+  moveToLocation: function () {
+    this.mapCtx.moveToLocation();
+  },
+
+  translateMarker: function () {
+    let that = this;
+    console.log("translate  " + that.data.longitude)
+    console.log("translate  " + that.data.latitude)
+    this.mapCtx.translateMarker({
+      markerId: 1,
+      autoRotate: true,
+      duration: 1000,
+      destination: {
+        longitude: that.data.longitude,
+        latitude: that.data.latitude
+      },
+      animationEnd() {
+        console.log('animation end')
+      }
+    })
+  },
+  
+  includePoints: function () {
+    this.mapCtx.includePoints({
+      padding: [10],
+      points: [{
+        latitude: 23.10229,
+        longitude: 113.3345211,
+      }, {
+        latitude: 23.00229,
+        longitude: 113.3345211,
+      }]
+    })
+  },
 })
