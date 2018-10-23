@@ -10,7 +10,7 @@
 	},
 	"appid": "wx7537d6508c48d7c1",
 	"projectname": "wx_smallSoft",
-	"libVersion": "2.2.5",
+	"libVersion": "2.3.0",
 	"compileType": "miniprogram",
 	"condition": {
 		"search": {
