@@ -83,17 +83,37 @@ Page({
    
     wx.cloud.getTempFileURL({
       fileList: [app.globalData.cloudPath],
-      success: res => {
-       
+        success: res => {
+          // fileList 是一个有如下结构的对象数组
+          // [{
+          //    fileID: 'cloud://xxx.png', // 文件 ID
+          //    tempFileURL: '', // 临时文件网络链接
+          //    maxAge: 120 * 60 * 1000, // 有效期
+          // }]
           console.log(that)
           that.setData({
-          
+          fileID: res.fileList[0].fileID,
           upDateImagePath: res.fileList[0].tempFileURL,
         })
-        console.log(that + that.data.upDateImagePath + "路径名");
+        console.log(that + that.data.cloudPath + " fileID " + fileID);
       },
       fail: console.error
     })
+  },
+
+
+  uuid : function () {
+    var s = [];
+    var hexDigits = "0123456789abcdef";
+    for(var i = 0; i< 36; i++) {
+    s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+    }
+    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[8] = s[13] = s[18] = s[23] = "-";
+
+    let uuid = s.join("");
+    return uuid;
   },
 
   // 上传图片
@@ -113,7 +133,7 @@ Page({
         const filePath = res.tempFilePaths[0]
         
         // 上传图片
-        const cloudPath = 'my-image' + filePath.match(/\.[^.]+?$/)[0]
+        const cloudPath = 'my-image-' + that.uuid() + filePath.match(/\.[^.]+?$/)[0]
         wx.cloud.uploadFile({
           cloudPath,
           filePath,
